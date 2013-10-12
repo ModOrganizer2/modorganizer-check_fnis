@@ -27,9 +27,11 @@ CheckFNIS::~CheckFNIS()
 bool CheckFNIS::init(IOrganizer *moInfo)
 {
   m_MOInfo = moInfo;
-  if (!moInfo->onAboutToRun(boost::bind(&CheckFNIS::fnisCheck, this, _1))) {
-    qCritical("failed to connect to event");
-    return false;
+  if (moInfo->pluginSetting(name(), "enabled").toBool()) {
+    if (!moInfo->onAboutToRun(std::bind(&CheckFNIS::fnisCheck, this, std::placeholders::_1))) {
+      qCritical("failed to connect to event");
+      return false;
+    }
   }
   return true;
 }
@@ -46,12 +48,13 @@ QString CheckFNIS::author() const
 
 QString CheckFNIS::description() const
 {
-  return tr("Checks if FNIS behaviours need to be updated whenever you start the game. This is only relevant for skyrim and if FNIS is installed.");
+  return tr("Checks if FNIS behaviours need to be updated whenever you start the game. This is only relevant for Skyrim and if FNIS is installed.<br>"
+            "<i>After you enabled/disabled this plugin you need to restart MO for the change to take effect.</i>");
 }
 
 VersionInfo CheckFNIS::version() const
 {
-  return VersionInfo(0, 1, 0, VersionInfo::RELEASE_BETA);
+  return VersionInfo(0, 2, 0, VersionInfo::RELEASE_BETA);
 }
 
 bool CheckFNIS::isActive() const
@@ -61,7 +64,9 @@ bool CheckFNIS::isActive() const
 
 QList<PluginSetting> CheckFNIS::settings() const
 {
-  return QList<PluginSetting>();
+  QList<PluginSetting> result;
+  result.push_back(PluginSetting("enabled", "check to enable this plugin", QVariant(false)));
+  return result;
 }
 
 
