@@ -27,7 +27,7 @@ CheckFNIS::~CheckFNIS()
 bool CheckFNIS::init(IOrganizer *moInfo)
 {
   m_MOInfo = moInfo;
-  if (!moInfo->onAboutToRun(boost::bind(&CheckFNIS::fnisCheck, this, _1))) {
+  if (!moInfo->onAboutToRun(std::bind(&CheckFNIS::fnisCheck, this, std::placeholders::_1))) {
     qCritical("failed to connect to event");
     return false;
   }
