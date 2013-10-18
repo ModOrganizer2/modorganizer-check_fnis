@@ -14,10 +14,12 @@ using namespace MOBase;
 CheckFNIS::CheckFNIS()
   : m_MOInfo(NULL), m_Active(false)
 {
-  m_MatchExpressions.push_back(QRegExp("^FNIS_.*_List.txt$"));
-  m_MatchExpressions.push_back(QRegExp("^PatchList.txt$"));
-  m_MatchExpressions.push_back(QRegExp("skeleton.*\\.nif$"));
+  m_MatchExpressions.push_back(QRegExp("\\\\FNIS_.*_List\\.txt$", Qt::CaseInsensitive));
+  m_MatchExpressions.push_back(QRegExp("\\\\FNIS.*Behavior\\.txt$", Qt::CaseInsensitive));
+  m_MatchExpressions.push_back(QRegExp("\\\\PatchList\\.txt$", Qt::CaseInsensitive));
+  m_MatchExpressions.push_back(QRegExp("\\\\skeleton.*\\.hkx$", Qt::CaseInsensitive));
 }
+
 
 CheckFNIS::~CheckFNIS()
 {
@@ -33,6 +35,11 @@ bool CheckFNIS::init(IOrganizer *moInfo)
       return false;
     }
   }
+
+  if (moInfo->pluginSetting(name(), "sensitive").toBool()) {
+    m_MatchExpressions.push_back(QRegExp("\\\\animations\\\\.*\\.hkx$", Qt::CaseInsensitive));
+  }
+
   return true;
 }
 
@@ -54,7 +61,7 @@ QString CheckFNIS::description() const
 
 VersionInfo CheckFNIS::version() const
 {
-  return VersionInfo(0, 2, 0, VersionInfo::RELEASE_BETA);
+  return VersionInfo(0, 3, 0, VersionInfo::RELEASE_BETA);
 }
 
 bool CheckFNIS::isActive() const
@@ -66,6 +73,8 @@ QList<PluginSetting> CheckFNIS::settings() const
 {
   QList<PluginSetting> result;
   result.push_back(PluginSetting("enabled", "check to enable this plugin", QVariant(false)));
+  result.push_back(PluginSetting("sensitive", "check changes on non-fnis animations. Makes this more reliable but will cause FNIS to be called more "
+                                              "often than necessary.", QVariant(false)));
   return result;
 }
 
@@ -84,7 +93,6 @@ bool CheckFNIS::testFileRelevant(const QString &fileName) const
 
 void CheckFNIS::findRelevantFilesRecursive(const QString &path, QMap<QString, QString> &fileList) const
 {
-  std::function<bool(const QString&)> x = std::bind(&CheckFNIS::testFileRelevant, this, std::placeholders::_1);
   // find all relevant files
   QStringList files = m_MOInfo->findFiles(path, std::bind(&CheckFNIS::testFileRelevant, this, std::placeholders::_1));
   foreach (const QString &fileName, files) {
@@ -130,7 +138,7 @@ bool CheckFNIS::fnisCheck(const QString &application)
 
 
   QStringList fnisBinary = m_MOInfo->findFiles("tools/GenerateFNIS_for_Users",
-      [] (const QString &fileName) -> bool { return fileName.compare("GenerateFNISforUsers.exe", Qt::CaseInsensitive) == 0; });
+    [] (const QString &fileName) -> bool { return fileName.endsWith("GenerateFNISforUsers.exe", Qt::CaseInsensitive); });
 
   if (fnisBinary.count() == 0) {
     // fnis seems not to be installed
