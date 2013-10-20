@@ -1,6 +1,7 @@
 #include "checkfnis.h"
 #include "report.h"
 #include <scopeguard.h>
+#include <questionboxmemory.h>
 #include <QtPlugin>
 #include <QFile>
 #include <QMessageBox>
@@ -153,9 +154,9 @@ bool CheckFNIS::fnisCheck(const QString &application)
     return true;
   }
 
-  QMessageBox::StandardButton res = QMessageBox::question(NULL, tr("Run FNIS before %1?").arg(application),
+  QDialogButtonBox::StandardButton res = QuestionBoxMemory::query(NULL, "fnisCheck", tr("Run FNIS before %1?").arg(application),
                             tr("FNIS source data has been changed. You should run GenerateFNIS.exe now."),
-                            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
+                            QDialogButtonBox::Yes | QDialogButtonBox::No | QDialogButtonBox::Cancel, QDialogButtonBox::Yes);
   if (res == QMessageBox::Yes) {
     HANDLE process = m_MOInfo->startApplication(fnisBinary.at(0));
     if (process == INVALID_HANDLE_VALUE) {
@@ -169,10 +170,18 @@ bool CheckFNIS::fnisCheck(const QString &application)
       if (res == WAIT_OBJECT_0) {
         DWORD exitCode = 0UL;
         ::GetExitCodeProcess(process, &exitCode);
-        if (exitCode == 0UL) {
+        if (static_cast<int>(exitCode) <= 0UL) {
           m_MOInfo->setPersistent(name(), m_MOInfo->profileName(), newHash);
+          if (exitCode != 0UL) {
+            if (QMessageBox::question(NULL, tr("Start %1?").arg(application),
+                tr("FNIS reported a warning, do you still want to run the application?"),
+                QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::No) {
+              return false;
+            }
+          }
         } else {
           reportError(tr("%1 failed to run").arg(fnisBinary.at(0)));
+          return false;
         }
       } else {
         reportError(tr("Couldn't determine exit code of %1").arg(fnisBinary.at(0)));
