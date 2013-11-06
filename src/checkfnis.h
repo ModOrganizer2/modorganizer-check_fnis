@@ -2,9 +2,9 @@
 #define CHECKFNIS_H
 
 #include <iplugin.h>
-#include <iplugindiagnose.h>
 #include <imoinfo.h>
 #include <QRegExp>
+#include <vector>
 
 class CheckFNIS : public QObject, MOBase::IPlugin
 {
