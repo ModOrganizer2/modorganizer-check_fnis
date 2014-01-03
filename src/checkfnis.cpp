@@ -134,6 +134,7 @@ bool CheckFNIS::fnisCheck(const QString &application)
   if (m_Active) {
     return true;
   }
+
   m_Active = true;
   ON_BLOCK_EXIT([&] { m_Active = false; });
 
