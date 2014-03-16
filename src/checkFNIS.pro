@@ -10,6 +10,10 @@ TEMPLATE = lib
 CONFIG += plugins
 CONFIG += dll
 
+contains(QT_VERSION, "^5.*") {
+	QT += widgets
+}
+
 DEFINES += CHECKFNIS_LIBRARY
 
 SOURCES += checkfnis.cpp
@@ -17,3 +21,6 @@ SOURCES += checkfnis.cpp
 HEADERS += checkfnis.h
 
 include(../plugin_template.pri)
+
+OTHER_FILES += \
+    checkfnis.json
