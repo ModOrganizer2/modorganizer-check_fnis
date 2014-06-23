@@ -3,6 +3,7 @@
 #include <scopeguard.h>
 #include <questionboxmemory.h>
 #include <QtPlugin>
+#include <QFileInfo>
 #include <QFile>
 #include <QMessageBox>
 #include <QCryptographicHash>
@@ -79,11 +80,10 @@ QList<PluginSetting> CheckFNIS::settings() const
   return result;
 }
 
-
-bool CheckFNIS::testFileRelevant(const QString &fileName) const
+bool CheckFNIS::testFileRelevant(const IOrganizer::FileInfo &fileName) const
 {
   for (auto iter = m_MatchExpressions.begin(); iter != m_MatchExpressions.end(); ++iter) {
-    if (iter->indexIn(fileName) != -1) {
+    if ((iter->indexIn(fileName.filePath) != -1) && fileName.archive.isEmpty()) {
       return true;
     }
   }
@@ -91,18 +91,17 @@ bool CheckFNIS::testFileRelevant(const QString &fileName) const
   return false;
 }
 
-
 void CheckFNIS::findRelevantFilesRecursive(const QString &path, QMap<QString, QString> &fileList) const
 {
   // find all relevant files
-  QStringList files = m_MOInfo->findFiles(path, std::bind(&CheckFNIS::testFileRelevant, this, std::placeholders::_1));
-  foreach (const QString &fileName, files) {
-    QFile file(fileName);
+  QList<IOrganizer::FileInfo> files = m_MOInfo->findFileInfos(path, std::bind(&CheckFNIS::testFileRelevant, this, std::placeholders::_1));
+  foreach (const IOrganizer::FileInfo &fileInfo, files) {
+    QFile file(fileInfo.filePath);
     if (file.open(QIODevice::ReadOnly)) {
       QString hash(QCryptographicHash::hash(file.readAll(), QCryptographicHash::Md5).toHex());
-      fileList.insert(fileName, hash);
+      fileList.insert(fileInfo.filePath, hash);
     } else {
-      qCritical("failed to open %s", qPrintable(fileName));
+      qCritical("failed to open %s", qPrintable(fileInfo.filePath));
     }
   }
 
@@ -111,7 +110,6 @@ void CheckFNIS::findRelevantFilesRecursive(const QString &path, QMap<QString, QS
     findRelevantFilesRecursive(path + "\\" + directory, fileList);
   }
 }
-
 
 QString CheckFNIS::generateIdentifier() const
 {
@@ -126,7 +124,6 @@ QString CheckFNIS::generateIdentifier() const
 
   return QCryptographicHash::hash(flattenedList.join(",").toUtf8(), QCryptographicHash::Md5).toHex();
 }
-
 
 bool CheckFNIS::fnisCheck(const QString &application)
 {

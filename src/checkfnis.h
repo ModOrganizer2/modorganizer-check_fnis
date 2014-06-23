@@ -33,7 +33,7 @@ private:
 
   bool fnisCheck(const QString &application);
 
-  bool testFileRelevant(const QString &fileName) const;
+  bool testFileRelevant(const MOBase::IOrganizer::FileInfo &fileName) const;
   void findRelevantFilesRecursive(const QString &path, QMap<QString, QString> &fileList) const;
   // generates a map of file-names and hashes. Any change prompts a new fnis run
   QString generateIdentifier() const;
