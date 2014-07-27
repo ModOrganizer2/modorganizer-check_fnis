@@ -63,7 +63,7 @@ QString CheckFNIS::description() const
 
 VersionInfo CheckFNIS::version() const
 {
-  return VersionInfo(0, 3, 0, VersionInfo::RELEASE_BETA);
+  return VersionInfo(1, 0, 0, VersionInfo::RELEASE_FINAL);
 }
 
 bool CheckFNIS::isActive() const
@@ -157,35 +157,31 @@ bool CheckFNIS::fnisCheck(const QString &application)
                             QDialogButtonBox::Yes | QDialogButtonBox::No | QDialogButtonBox::Cancel, QDialogButtonBox::Yes);
   if (res == QMessageBox::Yes) {
     HANDLE process = m_MOInfo->startApplication(fnisBinary.at(0));
+    bool cont = true;
     if (process == INVALID_HANDLE_VALUE) {
       reportError(tr("Failed to start %1").arg(fnisBinary.at(0)));
     } else {
-      DWORD res = ::WaitForSingleObject(process, 500);
-      while (res == WAIT_TIMEOUT) {
-        QCoreApplication::processEvents();
-        res = ::WaitForSingleObject(process, 500);
-      }
-      if (res == WAIT_OBJECT_0) {
-        DWORD exitCode = 0UL;
-        ::GetExitCodeProcess(process, &exitCode);
-        if (static_cast<int>(exitCode) <= 0UL) {
-          m_MOInfo->setPersistent(name(), m_MOInfo->profileName(), newHash);
-          if (exitCode != 0UL) {
-            if (QMessageBox::question(NULL, tr("Start %1?").arg(application),
-                tr("FNIS reported a warning, do you still want to run the application?"),
-                QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::No) {
-              return false;
-            }
-          }
-        } else {
-          reportError(tr("%1 failed to run").arg(fnisBinary.at(0)));
-          return false;
+      DWORD exitCodeU;
+      if (m_MOInfo->waitForApplication(process, &exitCodeU)) {
+        int exitCode = static_cast<int>(exitCodeU);
+        if (exitCode != 0) {
+          cont = QMessageBox::question(NULL, tr("Start %1?").arg(application),
+                                       tr("FNIS reported a %1, do you want to run the application "
+                                          "anyway?").arg(exitCode < 0 ? tr("warning")
+                                                                      : tr("critical error")),
+                                       QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes;
         }
       } else {
-        reportError(tr("Couldn't determine exit code of %1").arg(fnisBinary.at(0)));
+        cont = QMessageBox::question(NULL, tr("Start %1?").arg(application),
+                                     tr("Failed to determine fnis exit code, do you want to run the application "
+                                        "anyway?"),
+                                     QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes;
+      }
+      if (cont) {
+        m_MOInfo->setPersistent(name(), m_MOInfo->profileName(), newHash);
       }
     }
-    return true;
+    return cont;
   } else if (res == QMessageBox::No) {
     return true;
   } else {
