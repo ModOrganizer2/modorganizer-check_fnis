@@ -47,7 +47,7 @@ bool CheckFNIS::init(IOrganizer *moInfo)
 
 QString CheckFNIS::name() const
 {
-  return tr("FNIS Checker");
+  return "FNIS Checker";
 }
 
 QString CheckFNIS::author() const
