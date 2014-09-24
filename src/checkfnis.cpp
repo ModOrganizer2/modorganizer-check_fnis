@@ -155,7 +155,7 @@ bool CheckFNIS::fnisCheck(const QString &application)
   QDialogButtonBox::StandardButton res = QuestionBoxMemory::query(NULL, "fnisCheck", tr("Run FNIS before %1?").arg(application),
                             tr("FNIS source data has been changed. You should run GenerateFNIS.exe now."),
                             QDialogButtonBox::Yes | QDialogButtonBox::No | QDialogButtonBox::Cancel, QDialogButtonBox::Yes);
-  if (res == QMessageBox::Yes) {
+  if (res == QDialogButtonBox::Yes) {
     HANDLE process = m_MOInfo->startApplication(fnisBinary.at(0));
     bool cont = true;
     if (process == INVALID_HANDLE_VALUE) {
@@ -182,7 +182,7 @@ bool CheckFNIS::fnisCheck(const QString &application)
       }
     }
     return cont;
-  } else if (res == QMessageBox::No) {
+  } else if (res == QDialogButtonBox::No) {
     return true;
   } else {
     return false;
