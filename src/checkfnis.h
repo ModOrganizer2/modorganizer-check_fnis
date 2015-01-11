@@ -6,7 +6,7 @@
 #include <QRegExp>
 #include <vector>
 
-class CheckFNIS : public QObject, MOBase::IPlugin
+class CheckFNIS : public QObject, public MOBase::IPlugin
 {
 
   Q_OBJECT
