@@ -2,6 +2,7 @@
 #include "report.h"
 #include <scopeguard.h>
 #include <questionboxmemory.h>
+#include <igameinfo.h>
 #include <QtPlugin>
 #include <QFileInfo>
 #include <QFile>
