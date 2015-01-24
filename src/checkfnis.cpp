@@ -15,7 +15,7 @@ using namespace MOBase;
 
 
 CheckFNIS::CheckFNIS()
-  : m_MOInfo(NULL), m_Active(false)
+  : m_MOInfo(nullptr), m_Active(false)
 {
   m_MatchExpressions.push_back(QRegExp("\\\\FNIS_.*_List\\.txt$", Qt::CaseInsensitive));
   m_MatchExpressions.push_back(QRegExp("\\\\FNIS.*Behavior\\.txt$", Qt::CaseInsensitive));
@@ -153,7 +153,7 @@ bool CheckFNIS::fnisCheck(const QString &application)
     return true;
   }
 
-  QDialogButtonBox::StandardButton res = QuestionBoxMemory::query(NULL, "fnisCheck", tr("Run FNIS before %1?").arg(application),
+  QDialogButtonBox::StandardButton res = QuestionBoxMemory::query(nullptr, "fnisCheck", tr("Run FNIS before %1?").arg(application),
                             tr("FNIS source data has been changed. You should run GenerateFNIS.exe now."),
                             QDialogButtonBox::Yes | QDialogButtonBox::No | QDialogButtonBox::Cancel, QDialogButtonBox::Yes);
   if (res == QDialogButtonBox::Yes) {
@@ -166,14 +166,14 @@ bool CheckFNIS::fnisCheck(const QString &application)
       if (m_MOInfo->waitForApplication(process, &exitCodeU)) {
         int exitCode = static_cast<int>(exitCodeU);
         if (exitCode != 0) {
-          cont = QMessageBox::question(NULL, tr("Start %1?").arg(application),
+          cont = QMessageBox::question(nullptr, tr("Start %1?").arg(application),
                                        tr("FNIS reported a %1, do you want to run the application "
                                           "anyway?").arg(exitCode < 0 ? tr("warning")
                                                                       : tr("critical error")),
                                        QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes;
         }
       } else {
-        cont = QMessageBox::question(NULL, tr("Start %1?").arg(application),
+        cont = QMessageBox::question(nullptr, tr("Start %1?").arg(application),
                                      tr("Failed to determine fnis exit code, do you want to run the application "
                                         "anyway?"),
                                      QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes;
