@@ -21,4 +21,5 @@ HEADERS += checkfnis.h
 include(../plugin_template.pri)
 
 OTHER_FILES += \
-    checkfnis.json
+    checkfnis.json\
+    SConscript

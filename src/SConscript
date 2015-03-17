@@ -1,0 +1,26 @@
+Import('qt_env')
+
+env = qt_env.Clone()
+
+modules = [
+    'Core',
+    'Gui'
+]
+
+if env['QT_MAJOR_VERSION'] > 4:
+    modules += [ 'Widgets' ]
+
+env.EnableQt4Modules(['Qt' + n for n in modules],
+                     debug = env['CONFIG'] == 'debug')
+
+env.AppendUnique(CPPDEFINES = [ 'CHECKFNIS_LIBRARY' ])
+
+env.RequireLibraries('uibase')
+
+# Le sigh. SOmething v. odd in QT4
+env['CPPPATH'] += [
+    '.',
+]
+
+lib = env.SharedLibrary('checkFNIS', env.Glob('*.cpp'))
+env.InstallPlugin(lib)
