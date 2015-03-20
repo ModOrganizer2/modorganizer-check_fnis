@@ -11,3 +11,6 @@ env['CPPPATH'] += [
 
 lib = env.SharedLibrary('checkFNIS', env.Glob('*.cpp'))
 env.InstallModule(lib)
+
+res = env['QT_USED_MODULES']
+Return('res')
