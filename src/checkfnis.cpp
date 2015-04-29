@@ -59,7 +59,7 @@ QString CheckFNIS::author() const
 QString CheckFNIS::description() const
 {
   return tr("Checks if FNIS behaviours need to be updated whenever you start the game. This is only relevant for Skyrim and if FNIS is installed.<br>"
-            "<i>After you enabled/disabled this plugin you need to restart MO for the change to take effect.</i>");
+            "<i>You will need to restart MO after you enable/disable this plugin for the change to take effect.</i>");
 }
 
 VersionInfo CheckFNIS::version() const
