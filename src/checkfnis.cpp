@@ -1,14 +1,17 @@
 #include "checkfnis.h"
+
+#include "iplugingame.h"
 #include "report.h"
 #include <scopeguard.h>
 #include <questionboxmemory.h>
-#include <igameinfo.h>
+
 #include <QtPlugin>
 #include <QFileInfo>
 #include <QFile>
 #include <QMessageBox>
 #include <QCryptographicHash>
 #include <QCoreApplication>
+
 #include <functional>
 
 using namespace MOBase;
@@ -69,7 +72,7 @@ VersionInfo CheckFNIS::version() const
 
 bool CheckFNIS::isActive() const
 {
-  return m_MOInfo->gameInfo().type() == IGameInfo::TYPE_SKYRIM;
+  return m_MOInfo->managedGame()->gameName() == "Skyrim";
 }
 
 QList<PluginSetting> CheckFNIS::settings() const
