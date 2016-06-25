@@ -10,6 +10,7 @@
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QStringList>
 #include <QVariant>
@@ -203,9 +204,11 @@ bool CheckFNIS::fnisCheck(const QString &application)
     return true;
   }
 
-  QDialogButtonBox::StandardButton res = QuestionBoxMemory::query(nullptr, "fnisCheck", tr("Run FNIS before %1?").arg(application),
-                            tr("FNIS source data has been changed. You should run GenerateFNIS.exe now."),
-                            QDialogButtonBox::Yes | QDialogButtonBox::No | QDialogButtonBox::Cancel, QDialogButtonBox::Yes);
+  QDialogButtonBox::StandardButton res =
+    QuestionBoxMemory::query(nullptr, "fnisCheck", QFileInfo(application).fileName(),
+                             tr("Run FNIS before %1?").arg(application),
+                             tr("FNIS source data has been changed. You should run GenerateFNIS.exe now."),
+                             QDialogButtonBox::Yes | QDialogButtonBox::No | QDialogButtonBox::Cancel, QDialogButtonBox::Yes);
 
   if (res == QDialogButtonBox::Yes) {
     HANDLE process = m_MOInfo->startApplication(fnisApp);

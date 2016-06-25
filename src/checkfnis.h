@@ -57,11 +57,11 @@ private:
 private:
 
   MOBase::IOrganizer *m_MOInfo;
+  bool m_Active;
 
   std::vector<QRegExp> const m_MatchExpressions;
   std::vector<QRegExp> const m_SensitiveMatchExpressions;
 
-  bool m_Active;
 
 };
 
