@@ -47,7 +47,8 @@ private:
   bool fnisCheck(const QString &application);
   void fnisEndCheck(const QString &application, unsigned int code);
 
-  bool appIsFNIS(QString const &application, QString *fnisApp) const;
+  QString getFnisPath() const;
+  static bool appIsFNIS(QString const &application, const QString &fnisApp);
 
   bool testFileRelevant(const MOBase::IOrganizer::FileInfo &fileName) const;
   void findRelevantFilesRecursive(const QString &path, QMap<QString, QString> &fileList) const;
@@ -61,7 +62,6 @@ private:
 
   std::vector<QRegExp> const m_MatchExpressions;
   std::vector<QRegExp> const m_SensitiveMatchExpressions;
-
 
 };
 

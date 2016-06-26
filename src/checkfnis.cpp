@@ -156,36 +156,38 @@ QString CheckFNIS::generateIdentifier() const
   return QCryptographicHash::hash(flattenedList.join(",").toUtf8(), QCryptographicHash::Md5).toHex();
 }
 
-bool CheckFNIS::appIsFNIS(QString const &application, QString *fnisApp) const
+bool CheckFNIS::appIsFNIS(QString const &application, QString const &fnisApp)
 {
+  return QString::compare(QDir::fromNativeSeparators(application),
+                          QDir::fromNativeSeparators(fnisApp),
+                          Qt::CaseInsensitive) == 0;
+}
+
+QString CheckFNIS::getFnisPath() const
+{
+  if (!m_MOInfo->pluginSetting(name(), "enabled").toBool()) {
+    return "";
+  }
+
+  //Check if it's actually installed (...)
   QStringList fnisBinaryList = m_MOInfo->findFiles("tools/GenerateFNIS_for_Users",
     [] (const QString &fileName) -> bool { return fileName.endsWith("GenerateFNISforUsers.exe", Qt::CaseInsensitive); });
 
   if (fnisBinaryList.count() == 0) {
-    // fnis seems not to be installed
+    // fnis seems not to be installed even though this is enabled
     qDebug("fnis not installed");
-    return false;
+    return "";
   }
 
   //As this is looking in the vfs, there can be precisely 0 or 1 instances of FNIS
-  //Stash the fnis name if requested.
-  if (fnisApp != nullptr) {
-    *fnisApp = fnisBinaryList.at(0);
-  }
-
-  return QString::compare(QDir::fromNativeSeparators(application),
-                          QDir::fromNativeSeparators(fnisBinaryList.at(0)),
-                          Qt::CaseInsensitive) == 0;
+  return fnisBinaryList.at(0);
 }
 
 bool CheckFNIS::fnisCheck(const QString &application)
 {
-  if (!m_MOInfo->pluginSetting(name(), "enabled").toBool()) {
-    return true;
-  }
 
-  QString fnisApp;
-  if (appIsFNIS(application, &fnisApp)) {
+  QString fnisApp(getFnisPath());
+  if (fnisApp.isEmpty() || appIsFNIS(application, fnisApp)) {
     return true;
   }
 
@@ -247,8 +249,7 @@ bool CheckFNIS::fnisCheck(const QString &application)
 
 void CheckFNIS::fnisEndCheck(const QString &application, unsigned int code)
 {
-  if (m_MOInfo->pluginSetting(name(), "enabled").toBool() &&
-      appIsFNIS(application, nullptr)) {
+  if (appIsFNIS(application, getFnisPath())) {
     bool update = true;
     int exitCode = static_cast<int>(code);
     if (exitCode != 0) {
