@@ -1,10 +1,23 @@
 #ifndef CHECKFNIS_H
 #define CHECKFNIS_H
 
-#include <iplugin.h>
-#include <imoinfo.h>
+#include "iplugin.h"
+#include "imoinfo.h"
+#include "versioninfo.h"
+
+#include <QList>
+#include <QMap>
+#include <QObject>
 #include <QRegExp>
+#include <QString>
+
+#include <QtGlobal>       // for QT_VERSION, QT_VERSION_CHECK
+
 #include <vector>
+
+namespace MOBase {
+  struct PluginSetting;
+}
 
 class CheckFNIS : public QObject, public MOBase::IPlugin
 {
@@ -32,6 +45,10 @@ public: // IPlugin
 private:
 
   bool fnisCheck(const QString &application);
+  void fnisEndCheck(const QString &application, unsigned int code);
+
+  QString getFnisPath() const;
+  static bool appIsFNIS(QString const &application, const QString &fnisApp);
 
   bool testFileRelevant(const MOBase::IOrganizer::FileInfo &fileName) const;
   void findRelevantFilesRecursive(const QString &path, QMap<QString, QString> &fileList) const;
@@ -41,10 +58,10 @@ private:
 private:
 
   MOBase::IOrganizer *m_MOInfo;
-
-  std::vector<QRegExp> m_MatchExpressions;
-
   bool m_Active;
+
+  std::vector<QRegExp> const m_MatchExpressions;
+  std::vector<QRegExp> const m_SensitiveMatchExpressions;
 
 };
 

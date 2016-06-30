@@ -1,16 +1,24 @@
 #include "checkfnis.h"
 
 #include "iplugingame.h"
+#include "pluginsetting.h"
 #include "report.h"
-#include <scopeguard.h>
-#include <questionboxmemory.h>
+#include "scopeguard.h"
+#include "questionboxmemory.h"
 
-#include <QtPlugin>
-#include <QFileInfo>
-#include <QFile>
-#include <QMessageBox>
 #include <QCryptographicHash>
-#include <QCoreApplication>
+#include <QDialogButtonBox>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QStringList>
+#include <QVariant>
+
+#include <Qt>                    // for Qt::CaseInsensitive
+#include <QtDebug>               // for qCritical, qDebug
+
+#include <Windows.h>             // for DWORD, HANDLE, INVALID_HANDLE_VALUE
 
 #include <functional>
 
@@ -18,12 +26,19 @@ using namespace MOBase;
 
 
 CheckFNIS::CheckFNIS()
-  : m_MOInfo(nullptr), m_Active(false)
+  : m_MOInfo(nullptr)
+  , m_Active(false)
+  , m_MatchExpressions(std::vector<QRegExp> {
+        //MSVC2013 bug. The (std::vector<QRegExp> shouldn't be necessary
+        QRegExp("\\\\FNIS_.*_List\\.txt$", Qt::CaseInsensitive),
+        QRegExp("\\\\FNIS.*Behavior\\.txt$", Qt::CaseInsensitive),
+        QRegExp("\\\\PatchList\\.txt$", Qt::CaseInsensitive),
+        QRegExp("\\\\skeleton.*\\.hkx$", Qt::CaseInsensitive)
+      }
+    )
+  , m_SensitiveMatchExpressions(std::vector<QRegExp> {
+        QRegExp("\\\\animations\\\\.*\\.hkx$", Qt::CaseInsensitive) })
 {
-  m_MatchExpressions.push_back(QRegExp("\\\\FNIS_.*_List\\.txt$", Qt::CaseInsensitive));
-  m_MatchExpressions.push_back(QRegExp("\\\\FNIS.*Behavior\\.txt$", Qt::CaseInsensitive));
-  m_MatchExpressions.push_back(QRegExp("\\\\PatchList\\.txt$", Qt::CaseInsensitive));
-  m_MatchExpressions.push_back(QRegExp("\\\\skeleton.*\\.hkx$", Qt::CaseInsensitive));
 }
 
 
@@ -35,15 +50,15 @@ CheckFNIS::~CheckFNIS()
 bool CheckFNIS::init(IOrganizer *moInfo)
 {
   m_MOInfo = moInfo;
-  if (moInfo->pluginSetting(name(), "enabled").toBool()) {
-    if (!moInfo->onAboutToRun(std::bind(&CheckFNIS::fnisCheck, this, std::placeholders::_1))) {
-      qCritical("failed to connect to event");
-      return false;
-    }
+
+  if (!moInfo->onAboutToRun(std::bind(&CheckFNIS::fnisCheck, this, std::placeholders::_1))) {
+    qCritical("failed to connect to about to run event");
+    return false;
   }
 
-  if (moInfo->pluginSetting(name(), "sensitive").toBool()) {
-    m_MatchExpressions.push_back(QRegExp("\\\\animations\\\\.*\\.hkx$", Qt::CaseInsensitive));
+  if (!moInfo->onFinishedRun(std::bind(&CheckFNIS::fnisEndCheck, this, std::placeholders::_1, std::placeholders::_2))) {
+    qCritical("failed to connect to finished run event");
+    return false;
   }
 
   return true;
@@ -61,8 +76,8 @@ QString CheckFNIS::author() const
 
 QString CheckFNIS::description() const
 {
-  return tr("Checks if FNIS behaviours need to be updated whenever you start the game. This is only relevant for Skyrim and if FNIS is installed.<br>"
-            "<i>You will need to restart MO after you enable/disable this plugin for the change to take effect.</i>");
+  return tr("Checks if FNIS behaviours need to be updated whenever you start the game."
+            " This is only relevant for Skyrim and if FNIS is installed.<br>");
 }
 
 VersionInfo CheckFNIS::version() const
@@ -86,9 +101,21 @@ QList<PluginSetting> CheckFNIS::settings() const
 
 bool CheckFNIS::testFileRelevant(const IOrganizer::FileInfo &fileName) const
 {
-  for (auto iter = m_MatchExpressions.begin(); iter != m_MatchExpressions.end(); ++iter) {
-    if ((iter->indexIn(fileName.filePath) != -1) && fileName.archive.isEmpty()) {
+  if (! fileName.archive.isEmpty()) {
+    return false;
+  }
+
+  for (auto & expr : m_MatchExpressions) {
+    if (expr.indexIn(fileName.filePath) != -1) {
       return true;
+    }
+  }
+
+  if (m_MOInfo->pluginSetting(name(), "sensitive").toBool()) {
+    for (auto & expr : m_SensitiveMatchExpressions) {
+      if (expr.indexIn(fileName.filePath) != -1) {
+        return true;
+      }
     }
   }
 
@@ -129,8 +156,41 @@ QString CheckFNIS::generateIdentifier() const
   return QCryptographicHash::hash(flattenedList.join(",").toUtf8(), QCryptographicHash::Md5).toHex();
 }
 
+bool CheckFNIS::appIsFNIS(QString const &application, QString const &fnisApp)
+{
+  return QString::compare(QDir::fromNativeSeparators(application),
+                          QDir::fromNativeSeparators(fnisApp),
+                          Qt::CaseInsensitive) == 0;
+}
+
+QString CheckFNIS::getFnisPath() const
+{
+  if (!m_MOInfo->pluginSetting(name(), "enabled").toBool()) {
+    return "";
+  }
+
+  //Check if it's actually installed (...)
+  QStringList fnisBinaryList = m_MOInfo->findFiles("tools/GenerateFNIS_for_Users",
+    [] (const QString &fileName) -> bool { return fileName.endsWith("GenerateFNISforUsers.exe", Qt::CaseInsensitive); });
+
+  if (fnisBinaryList.count() == 0) {
+    // fnis seems not to be installed even though this is enabled
+    qDebug("fnis not installed");
+    return "";
+  }
+
+  //As this is looking in the vfs, there can be precisely 0 or 1 instances of FNIS
+  return fnisBinaryList.at(0);
+}
+
 bool CheckFNIS::fnisCheck(const QString &application)
 {
+
+  QString fnisApp(getFnisPath());
+  if (fnisApp.isEmpty() || appIsFNIS(application, fnisApp)) {
+    return true;
+  }
+
   // prevent this check from being called recursively
   if (m_Active) {
     return true;
@@ -139,31 +199,24 @@ bool CheckFNIS::fnisCheck(const QString &application)
   m_Active = true;
   ON_BLOCK_EXIT([&] { m_Active = false; });
 
+  QString const newHash = generateIdentifier();
 
-  QStringList fnisBinary = m_MOInfo->findFiles("tools/GenerateFNIS_for_Users",
-    [] (const QString &fileName) -> bool { return fileName.endsWith("GenerateFNISforUsers.exe", Qt::CaseInsensitive); });
-
-  if (fnisBinary.count() == 0) {
-    // fnis seems not to be installed
-    qDebug("fnis not installed");
+  if (newHash == m_MOInfo->persistent(name(), m_MOInfo->profileName(), "").toString()) {
+    //Don't need to run fnis as nothing relevant has changed.
     return true;
   }
 
-  QString oldHash = m_MOInfo->persistent(name(), m_MOInfo->profileName(), "").toString();
-  QString newHash = generateIdentifier();
+  QDialogButtonBox::StandardButton res =
+    QuestionBoxMemory::query(nullptr, "fnisCheck", QFileInfo(application).fileName(),
+                             tr("Run FNIS before %1?").arg(application),
+                             tr("FNIS source data has been changed. You should run GenerateFNIS.exe now."),
+                             QDialogButtonBox::Yes | QDialogButtonBox::No | QDialogButtonBox::Cancel, QDialogButtonBox::Yes);
 
-  if (newHash == oldHash) {
-    return true;
-  }
-
-  QDialogButtonBox::StandardButton res = QuestionBoxMemory::query(nullptr, "fnisCheck", tr("Run FNIS before %1?").arg(application),
-                            tr("FNIS source data has been changed. You should run GenerateFNIS.exe now."),
-                            QDialogButtonBox::Yes | QDialogButtonBox::No | QDialogButtonBox::Cancel, QDialogButtonBox::Yes);
   if (res == QDialogButtonBox::Yes) {
-    HANDLE process = m_MOInfo->startApplication(fnisBinary.at(0));
+    HANDLE process = m_MOInfo->startApplication(fnisApp);
     bool cont = true;
     if (process == INVALID_HANDLE_VALUE) {
-      reportError(tr("Failed to start %1").arg(fnisBinary.at(0)));
+      reportError(tr("Failed to start %1").arg(fnisApp));
     } else {
       DWORD exitCodeU;
       if (m_MOInfo->waitForApplication(process, &exitCodeU)) {
@@ -177,7 +230,7 @@ bool CheckFNIS::fnisCheck(const QString &application)
         }
       } else {
         cont = QMessageBox::question(nullptr, tr("Start %1?").arg(application),
-                                     tr("Failed to determine fnis exit code, do you want to run the application "
+                                     tr("Failed to determine FNIS exit code, do you want to run the application "
                                         "anyway?"),
                                      QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes;
       }
@@ -189,7 +242,26 @@ bool CheckFNIS::fnisCheck(const QString &application)
   } else if (res == QDialogButtonBox::No) {
     return true;
   } else {
+    //Don't run the app if they pressed cancel
     return false;
+  }
+}
+
+void CheckFNIS::fnisEndCheck(const QString &application, unsigned int code)
+{
+  if (appIsFNIS(application, getFnisPath())) {
+    bool update = true;
+    int exitCode = static_cast<int>(code);
+    if (exitCode != 0) {
+      update = QMessageBox::question(nullptr, tr("Start %1?").arg(application),
+                                     tr("FNIS reported a %1. Do you want to assume it worked?"
+                                       ).arg(exitCode < 0 ? tr("warning")
+                                                          : tr("critical error")),
+                                     QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes;
+    }
+    if (update) {
+      m_MOInfo->setPersistent(name(), m_MOInfo->profileName(), generateIdentifier());
+    }
   }
 }
 
