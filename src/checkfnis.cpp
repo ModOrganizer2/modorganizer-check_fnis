@@ -82,7 +82,7 @@ QString CheckFNIS::description() const
 
 VersionInfo CheckFNIS::version() const
 {
-  return VersionInfo(1, 0, 0, VersionInfo::RELEASE_FINAL);
+  return VersionInfo(1, 0, 1, VersionInfo::RELEASE_FINAL);
 }
 
 bool CheckFNIS::isActive() const
