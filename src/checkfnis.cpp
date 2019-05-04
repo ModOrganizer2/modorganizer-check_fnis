@@ -82,7 +82,7 @@ QString CheckFNIS::description() const
 
 VersionInfo CheckFNIS::version() const
 {
-  return VersionInfo(1, 0, 0, VersionInfo::RELEASE_FINAL);
+  return VersionInfo(1, 0, 1, VersionInfo::RELEASE_FINAL);
 }
 
 bool CheckFNIS::isActive() const
@@ -132,7 +132,7 @@ void CheckFNIS::findRelevantFilesRecursive(const QString &path, QMap<QString, QS
       QString hash(QCryptographicHash::hash(file.readAll(), QCryptographicHash::Md5).toHex());
       fileList.insert(fileInfo.filePath, hash);
     } else {
-      qCritical("failed to open %s", qPrintable(fileInfo.filePath));
+      qCritical("failed to open %s", qUtf8Printable(fileInfo.filePath));
     }
   }
 
