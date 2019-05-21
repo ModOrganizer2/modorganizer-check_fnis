@@ -14,11 +14,11 @@ build_script:
 
     C:\Python37-x64\python.exe unimake.py -d c:\projects\modorganizer-build -s Appveyor_Build=True %APPVEYOR_PROJECT_NAME%
 artifacts:
-- path: vsbuild\src\RelWithDebInfo\check_fnis.dll
+- path: ..\..\..\install\bin\plugins\check_fnis.dll
   name: check_fnis_dll
-- path: vsbuild\src\RelWithDebInfo\check_fnis.pdb
+- path: ..\..\..\install\pdb\check_fnis.pdb
   name: check_fnis_pdb
-- path: vsbuild\src\RelWithDebInfo\check_fnis.lib
+- path: ..\..\..\install\libs\check_fnis.lib
   name: check_fnis_lib
 on_success:
   - ps: Set-Location -Path $env:APPVEYOR_BUILD_FOLDER
