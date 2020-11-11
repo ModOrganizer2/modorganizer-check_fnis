@@ -69,6 +69,11 @@ QString CheckFNIS::name() const
   return "FNIS Checker";
 }
 
+QString CheckFNIS::localizedName() const
+{
+  return tr("FNIS Checker");
+}
+
 QString CheckFNIS::author() const
 {
   return "Tannin";
@@ -85,15 +90,15 @@ VersionInfo CheckFNIS::version() const
   return VersionInfo(1, 0, 1, VersionInfo::RELEASE_FINAL);
 }
 
-bool CheckFNIS::isActive() const
+
+QList<IPluginRequirement*> CheckFNIS::requirements() const
 {
-  return m_MOInfo->managedGame()->gameName() == "Skyrim";
+  return { Requirements::gameDependency("Skyrim") };
 }
 
 QList<PluginSetting> CheckFNIS::settings() const
 {
   QList<PluginSetting> result;
-  result.push_back(PluginSetting("enabled", "check to enable this plugin", QVariant(false)));
   result.push_back(PluginSetting("sensitive", "check changes on non-fnis animations. Makes this more reliable but will cause FNIS to be called more "
                                               "often than necessary.", QVariant(false)));
   return result;
