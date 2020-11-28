@@ -37,7 +37,7 @@ public: // IPlugin
   virtual bool init(MOBase::IOrganizer *moInfo) override;
   virtual QString name() const override;
   virtual QString localizedName() const override;
-  virtual QList<MOBase::IPluginRequirement*> requirements() const override;
+  virtual std::vector<std::shared_ptr<const MOBase::IPluginRequirement>> requirements() const override;
   virtual QString author() const override;
   virtual QString description() const override;
   virtual MOBase::VersionInfo version() const override;

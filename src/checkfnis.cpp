@@ -91,7 +91,7 @@ VersionInfo CheckFNIS::version() const
 }
 
 
-QList<IPluginRequirement*> CheckFNIS::requirements() const
+std::vector<std::shared_ptr<const MOBase::IPluginRequirement>> CheckFNIS::requirements() const
 {
   return { Requirements::gameDependency("Skyrim") };
 }
