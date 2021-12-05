@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(check_fnis)
+project(check_fnis LANGUAGES CXX)
 set(project_type plugin)
 set(enable_warnings OFF)
 
