@@ -8,7 +8,6 @@
 #include <QList>
 #include <QMap>
 #include <QObject>
-#include <QRegExp>
 #include <QString>
 
 #include <QtGlobal>       // for QT_VERSION, QT_VERSION_CHECK
@@ -61,8 +60,8 @@ private:
   MOBase::IOrganizer *m_MOInfo;
   bool m_Active;
 
-  std::vector<QRegExp> const m_MatchExpressions;
-  std::vector<QRegExp> const m_SensitiveMatchExpressions;
+  std::vector<QRegularExpression> const m_MatchExpressions;
+  std::vector<QRegularExpression> const m_SensitiveMatchExpressions;
 
 };
 

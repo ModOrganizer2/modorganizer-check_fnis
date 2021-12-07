@@ -28,16 +28,16 @@ using namespace MOBase;
 CheckFNIS::CheckFNIS()
   : m_MOInfo(nullptr)
   , m_Active(false)
-  , m_MatchExpressions(std::vector<QRegExp> {
+  , m_MatchExpressions(std::vector<QRegularExpression> {
         //MSVC2013 bug. The (std::vector<QRegExp> shouldn't be necessary
-        QRegExp("\\\\FNIS_.*_List\\.txt$", Qt::CaseInsensitive),
-        QRegExp("\\\\FNIS.*Behavior\\.txt$", Qt::CaseInsensitive),
-        QRegExp("\\\\PatchList\\.txt$", Qt::CaseInsensitive),
-        QRegExp("\\\\skeleton.*\\.hkx$", Qt::CaseInsensitive)
+        QRegularExpression("\\\\FNIS_.*_List\\.txt$", QRegularExpression::PatternOption::CaseInsensitiveOption),
+        QRegularExpression("\\\\FNIS.*Behavior\\.txt$", QRegularExpression::PatternOption::CaseInsensitiveOption),
+        QRegularExpression("\\\\PatchList\\.txt$", QRegularExpression::PatternOption::CaseInsensitiveOption),
+        QRegularExpression("\\\\skeleton.*\\.hkx$", QRegularExpression::PatternOption::CaseInsensitiveOption)
       }
     )
-  , m_SensitiveMatchExpressions(std::vector<QRegExp> {
-        QRegExp("\\\\animations\\\\.*\\.hkx$", Qt::CaseInsensitive) })
+  , m_SensitiveMatchExpressions(std::vector<QRegularExpression> {
+        QRegularExpression("\\\\animations\\\\.*\\.hkx$", QRegularExpression::PatternOption::CaseInsensitiveOption) })
 {
 }
 
@@ -111,14 +111,16 @@ bool CheckFNIS::testFileRelevant(const IOrganizer::FileInfo &fileName) const
   }
 
   for (auto & expr : m_MatchExpressions) {
-    if (expr.indexIn(fileName.filePath) != -1) {
+    auto match = expr.match(fileName.filePath);
+    if (match.hasMatch()) {
       return true;
     }
   }
 
   if (m_MOInfo->pluginSetting(name(), "sensitive").toBool()) {
     for (auto & expr : m_SensitiveMatchExpressions) {
-      if (expr.indexIn(fileName.filePath) != -1) {
+      auto match = expr.match(fileName.filePath);
+      if (match.hasMatch()) {
         return true;
       }
     }
