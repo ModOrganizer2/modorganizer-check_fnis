@@ -51,7 +51,7 @@ bool CheckFNIS::init(IOrganizer *moInfo)
 {
   m_MOInfo = moInfo;
 
-  if (!moInfo->onAboutToRun(std::bind(&CheckFNIS::fnisCheck, this, std::placeholders::_1))) {
+  if (!moInfo->onAboutToRun([this](const auto& binary) { return fnisCheck(binary); })) {
     qCritical("failed to connect to about to run event");
     return false;
   }
