@@ -1,10 +1,10 @@
 #include "checkfnis.h"
 
-#include "iplugingame.h"
-#include "pluginsetting.h"
-#include "report.h"
-#include "scopeguard.h"
-#include "questionboxmemory.h"
+#include <uibase/iplugingame.h>
+#include <uibase/pluginsetting.h>
+#include <uibase/report.h>
+#include <uibase/scopeguard.h>
+#include <uibase/questionboxmemory.h>
 
 #include <QCryptographicHash>
 #include <QDialogButtonBox>

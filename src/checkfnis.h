@@ -1,20 +1,21 @@
 #ifndef CHECKFNIS_H
 #define CHECKFNIS_H
 
-#include "iplugin.h"
-#include "imoinfo.h"
-#include "versioninfo.h"
+#include <uibase/iplugin.h>
+#include <uibase/imoinfo.h>
+#include <uibase/versioninfo.h>
 
 #include <QList>
 #include <QMap>
 #include <QObject>
 #include <QString>
 
-#include <QtGlobal>       // for QT_VERSION, QT_VERSION_CHECK
+#include <QtGlobal> // for QT_VERSION, QT_VERSION_CHECK
 
 #include <vector>
 
-namespace MOBase {
+namespace MOBase
+{
   struct PluginSetting;
 }
 
@@ -23,8 +24,8 @@ class CheckFNIS : public QObject, public MOBase::IPlugin
 
   Q_OBJECT
   Q_INTERFACES(MOBase::IPlugin)
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-  Q_PLUGIN_METADATA(IID "org.tannin.CheckFNIS" FILE "checkfnis.json")
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+  Q_PLUGIN_METADATA(IID "org.tannin.CheckFNIS")
 #endif
 
 public:
@@ -32,7 +33,6 @@ public:
   ~CheckFNIS();
 
 public: // IPlugin
-
   virtual bool init(MOBase::IOrganizer *moInfo) override;
   virtual QString name() const override;
   virtual QString localizedName() const override;
@@ -43,7 +43,6 @@ public: // IPlugin
   virtual QList<MOBase::PluginSetting> settings() const override;
 
 private:
-
   bool fnisCheck(const QString &application);
   void fnisEndCheck(const QString &application, unsigned int code);
 
@@ -56,13 +55,11 @@ private:
   QString generateIdentifier() const;
 
 private:
-
   MOBase::IOrganizer *m_MOInfo;
   bool m_Active;
 
   std::vector<QRegularExpression> const m_MatchExpressions;
   std::vector<QRegularExpression> const m_SensitiveMatchExpressions;
-
 };
 
 #endif // CHECKFNIS_H
