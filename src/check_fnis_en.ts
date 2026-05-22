@@ -14,51 +14,51 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="checkfnis.cpp" line="218"/>
+        <location filename="checkfnis.cpp" line="230"/>
         <source>Run FNIS before %1?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="checkfnis.cpp" line="219"/>
+        <location filename="checkfnis.cpp" line="231"/>
         <source>FNIS source data has been changed. You should run GenerateFNIS.exe now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="checkfnis.cpp" line="226"/>
+        <location filename="checkfnis.cpp" line="239"/>
         <source>Failed to start %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="checkfnis.cpp" line="232"/>
-        <location filename="checkfnis.cpp" line="239"/>
-        <location filename="checkfnis.cpp" line="263"/>
+        <location filename="checkfnis.cpp" line="246"/>
+        <location filename="checkfnis.cpp" line="254"/>
+        <location filename="checkfnis.cpp" line="282"/>
         <source>Start %1?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="checkfnis.cpp" line="233"/>
+        <location filename="checkfnis.cpp" line="247"/>
         <source>FNIS reported a %1, do you want to run the application anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="checkfnis.cpp" line="234"/>
-        <location filename="checkfnis.cpp" line="265"/>
+        <location filename="checkfnis.cpp" line="249"/>
+        <location filename="checkfnis.cpp" line="284"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="checkfnis.cpp" line="235"/>
-        <location filename="checkfnis.cpp" line="266"/>
+        <location filename="checkfnis.cpp" line="249"/>
+        <location filename="checkfnis.cpp" line="284"/>
         <source>critical error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="checkfnis.cpp" line="240"/>
+        <location filename="checkfnis.cpp" line="255"/>
         <source>Failed to determine FNIS exit code, do you want to run the application anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="checkfnis.cpp" line="264"/>
+        <location filename="checkfnis.cpp" line="283"/>
         <source>FNIS reported a %1. Do you want to assume it worked?</source>
         <translation type="unfinished"></translation>
     </message>
